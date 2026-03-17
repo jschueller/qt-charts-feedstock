@@ -1,0 +1,63 @@
+context:
+  version: "6.10.2"
+  maj_min: ${{ (version | split('.'))[:2] | join('.') }}
+
+package:
+  name: qt6-charts
+  version: ${{ version }}
+
+source:
+  url: https://download.qt.io/official_releases/qt/${{ maj_min }}/${{ version }}/submodules/qtcharts-everywhere-src-${{ version }}.tar.xz
+  md5: 37c09273ebded5fde32c7200eedc229c
+
+build:
+  number: 1
+
+requirements:
+  build:
+    - cmake
+    - ninja
+    - perl
+    - ${{ compiler('cxx') }}
+    - ${{ compiler('c') }}
+    - ${{ stdlib("c") }}
+    - if: build_platform != target_platform
+      then: qt6-main ${{ version }}.*
+  host:
+    - qt6-main ${{ version }}.*
+    - if: linux
+      then:
+        - libgl-devel
+        - libegl-devel
+        - libopengl-devel
+  run:
+    - qt6-main ${{ version }}.*
+  run_exports:
+    - ${{ pin_subpackage('qt6-charts', upper_bound='x.x') }}
+
+tests:
+  - script:
+    - if: unix
+      then:
+        - test -d $PREFIX/include/qt6/QtCharts
+        - test -f $PREFIX/lib/libQt6Charts${SHLIB_EXT}
+      else:
+        - if not exist %PREFIX%\\Library\\include\\qt6\\QtCharts exit 1
+        - if not exist %PREFIX%\\Library\\lib\\Qt6Charts.lib exit 1
+        - if not exist %PREFIX%\\Library\\bin\\Qt6Charts.dll exit 1
+
+about:
+  homepage: http://qt-project.org
+  license: GPL-3.0-only
+  license_file: LICENSES/GPL-3.0-only.txt
+  summary: Qt is a cross-platform application and UI framework.
+  description: |
+    Qt helps you create connected devices, UIs & applications that run
+    anywhere on any device, on any operating system at any time.
+  documentation: http://doc.qt.io/
+  repository: https://github.com/qt/qtcharts
+
+extra:
+  recipe-maintainers:
+    - jschueller
+  feedstock-name: qt-charts
